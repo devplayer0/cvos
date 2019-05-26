@@ -7,7 +7,9 @@ from subprocess import check_call, check_output
 import tempfile
 import shutil
 
-BL_SIZE = 585
+import pefile
+
+BL_SIZE = 902
 
 def sector_aligned(n):
     if n % 512 == 0:
@@ -17,6 +19,9 @@ def sector_aligned(n):
 PTABLE = 446
 def pentry(n):
     return PTABLE + ((n-1)*16)
+
+PE_POINTER = 0x3c
+PE_MAGIC = b'PE\0\0'
 
 FIRST_SECTOR     = 0x8
 SECTOR_COUNT     = 0xc
@@ -88,6 +93,8 @@ def main():
 
             kernel_size = path.getsize(kernel_file)
             print(f'kernel size: {kernel_size} bytes')
+            kernel_pe = pefile.PE(kernel_file)
+
             esp_size = sector_aligned(kernel_size) + (64*1024)
             assert esp_size % 512 == 0
             print(f'creating fat12 filesystem of size {esp_size} ({esp_size/512} sectors)')
@@ -103,8 +110,14 @@ def main():
                     check_call(['sudo', 'umount', esp_mount])
 
                 kernel_offset = get_fat_file_offset(esp.name, '/efi/boot/bootx64.efi')
-
                 assert kernel_offset % 512 == 0
+                esp.seek(kernel_offset + PE_POINTER, os.SEEK_SET)
+                kernel_pe_offset, = struct.unpack('<I', esp.read(4))
+                esp.seek(kernel_offset + kernel_pe_offset, os.SEEK_SET)
+                assert esp.read(4) == PE_MAGIC
+                kernel_pe_offset = aligned_pdf + kernel_offset + kernel_pe_offset
+                print(f'kernel PE (efistub) offset: 0x{kernel_pe_offset:x}')
+
                 kernel_lba = esp_start + (kernel_offset // 512)
                 rfs_lba = esp_start + (esp_size // 512)
                 print(f'esp lba: {esp_start}, kernel lba: {kernel_lba}, rootfs lba: {rfs_lba}')
@@ -122,6 +135,34 @@ def main():
                         write_psize(bootloader, 1, esp_start, esp_size // 512)
                         write_psize(bootloader, 2, rfs_lba, rfs_sectors)
 
+                        bl_pe = pefile.PE(bootloader.name)
+                        bl_oh = bl_pe.OPTIONAL_HEADER
+                        k_oh = kernel_pe.OPTIONAL_HEADER
+
+                        # Optional header standard fields
+                        bl_oh.SizeOfCode = k_oh.SizeOfCode
+                        print(f'SizeOfCode: {bl_oh.SizeOfCode}')
+                        bl_oh.SizeOfInitializedData = k_oh.SizeOfInitializedData
+                        bl_oh.SizeOfUninitializedData = k_oh.SizeOfUninitializedData
+                        bl_oh.AddressOfEntryPoint = k_oh.AddressOfEntryPoint
+
+                        # Optional header Windows-specific (?) fields
+                        bl_oh.SizeOfImage = k_oh.SizeOfImage
+
+                        # Section headers
+                        for i, section in enumerate(bl_pe.sections):
+                            ks = kernel_pe.sections[i]
+                            section.Misc_VirtualSize = ks.Misc_VirtualSize
+                            section.VirtualAddress = ks.VirtualAddress
+                            section.SizeOfRawData = ks.SizeOfRawData
+
+                            if not section.Name.startswith(b'.bss'):
+                                section.PointerToRawData = aligned_pdf + kernel_offset + ks.PointerToRawData
+
+                        bl_pe.write(bootloader.name)
+                        bl_pe.close()
+                        kernel_pe.close()
+
                         bootloader.seek(0, os.SEEK_SET)
                         disk.write(bootloader.read())
 
@@ -136,6 +177,7 @@ def main():
                         print(f'padding pdf by {padding} bytes')
                         disk.seek(padding, os.SEEK_CUR)
 
+                    esp.seek(0, os.SEEK_SET)
                     while True:
                         data = esp.read(512)
                         if not data:
