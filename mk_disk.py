@@ -141,7 +141,6 @@ def main():
 
                         # Optional header standard fields
                         bl_oh.SizeOfCode = k_oh.SizeOfCode
-                        print(f'SizeOfCode: {bl_oh.SizeOfCode}')
                         bl_oh.SizeOfInitializedData = k_oh.SizeOfInitializedData
                         bl_oh.SizeOfUninitializedData = k_oh.SizeOfUninitializedData
                         bl_oh.AddressOfEntryPoint = k_oh.AddressOfEntryPoint
