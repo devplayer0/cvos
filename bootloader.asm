@@ -411,3 +411,5 @@ gdt:
 current_lba	dd	kernel_lba			; initialize to kernel LBA
 cmd_line	db	'', 0
 cmd_length	equ	$ - cmd_line
+
+	dd pdf_size						; to be read by the os to extract the PDF

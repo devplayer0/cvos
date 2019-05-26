@@ -9,7 +9,7 @@ import shutil
 
 import pefile
 
-BL_SIZE = 902
+BL_SIZE = 906
 
 def sector_aligned(n):
     if n % 512 == 0:
@@ -85,7 +85,8 @@ def main():
     with open(out_file, 'wb') as disk:
         with open(pdf_file, 'rb') as pdf:
             pdf.seek(0, os.SEEK_END)
-            pdf_size = BL_SIZE + pdf.tell()
+            orig_pdf_size = pdf.tell()
+            pdf_size = BL_SIZE + orig_pdf_size
             aligned_pdf = sector_aligned(pdf_size)
             print(f'bootloader + pdf size: {pdf_size} bytes (aligned to {aligned_pdf} bytes) - {aligned_pdf // 512} sectors')
 
@@ -128,7 +129,7 @@ def main():
                     rfs_sectors = sector_aligned(rfs_size) // 512
                     print(f'rootfs is {rfs_size} bytes ({rfs_sectors} sectors)')
                     with tempfile.NamedTemporaryFile('w+b', prefix='boot-', suffix='.bin') as bootloader:
-                        check_call(['nasm', '-D', f'kernel_lba={kernel_lba}', '-o', bootloader.name, bl_source])
+                        check_call(['nasm', '-D', f'kernel_lba={kernel_lba}', '-D', f'pdf_size={orig_pdf_size}', '-o', bootloader.name, bl_source])
                         bootloader.seek(0, os.SEEK_END)
                         assert bootloader.tell() == BL_SIZE
 
