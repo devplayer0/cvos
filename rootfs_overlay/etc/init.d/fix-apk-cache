@@ -1,0 +1,14 @@
+#!/sbin/openrc-run
+
+description="Ensure /var/cache/apk exists so apk works"
+
+depend() {
+	need localmount
+}
+start() {
+	if [ ! -d /var/cache/apk ]; then
+		ebegin "Creating /var/cache/apk"
+		mkdir /var/cache/apk
+		eend $?
+	fi
+}

@@ -1,0 +1,11 @@
+#!/sbin/openrc-run
+
+description="X11 server (startx)"
+command="/usr/bin/xinit"
+command_args="/etc/X11/xinit/xinitrc"
+command_background=true
+pidfile="/var/run/$SVCNAME"
+
+depend() {
+	need localmount
+}

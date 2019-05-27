@@ -1,0 +1,9 @@
+#!/bin/sh
+
+mupdf-x11 /embedded.pdf &
+
+RES=$(xrandr -q | grep primary | awk '{ split($4, w, "+"); split(w[1], res, "x"); print res[1] " " res[2] }')
+xdotool search --sync --class "mupdf" windowsize $RES windowmove 0 0
+xmessage -center -buttons OK -file /etc/xwelcome
+
+wait

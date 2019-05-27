@@ -13,7 +13,7 @@ JOBS=$(shell nproc)
 DIST := bootable.pdf
 
 MKSQUASH_OPTS := -b 1M -comp xz -Xdict-size 100%
-QEMU_CMD := qemu-system-x86_64 -machine q35 -m 2G -enable-kvm -vga qxl -usb -device usb-tablet -net nic -net user
+QEMU_CMD := qemu-system-x86_64 -machine q35 -m 2G -cpu host -smp 2 -enable-kvm -vga qxl -usb -device usb-tablet -net nic -net user
 OVMF := /usr/share/ovmf/x64/OVMF_CODE.fd
 
 .PHONY: default all clean app boot_bios boot_uefi boot_uefi_indirect
@@ -42,8 +42,8 @@ initramfs/bin/busybox: $(BUSYBOX_BIN)
 $(KERNEL_IMAGE): $(LINUX_DIR) $(LINUX_DIR)/.config initramfs/bin/busybox
 	$(MAKE) -C $< -j$(JOBS)
 
-rootfs/:
-	./mk_root.sh $@
+rootfs/: rootfs_overlay/
+	./mk_root.sh $@ $<
 rootfs.sfs: rootfs/
 	sudo mksquashfs $< $@ -noappend $(MKSQUASH_OPTS)
 
