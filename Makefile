@@ -12,7 +12,8 @@ PDF := sample.pdf
 JOBS=$(shell nproc)
 DIST := bootable.pdf
 
-QEMU_CMD := qemu-system-x86_64 -machine q35 -m 2G -enable-kvm -vga qxl
+MKSQUASH_OPTS := -b 1M -comp xz -Xdict-size 100%
+QEMU_CMD := qemu-system-x86_64 -machine q35 -m 2G -enable-kvm -vga qxl -usb -device usb-tablet -net nic -net user
 OVMF := /usr/share/ovmf/x64/OVMF_CODE.fd
 
 .PHONY: default all clean app boot_bios boot_uefi boot_uefi_indirect
@@ -41,6 +42,11 @@ initramfs/bin/busybox: $(BUSYBOX_BIN)
 $(KERNEL_IMAGE): $(LINUX_DIR) $(LINUX_DIR)/.config initramfs/bin/busybox
 	$(MAKE) -C $< -j$(JOBS)
 
+rootfs/:
+	./mk_root.sh $@
+rootfs.sfs: rootfs/
+	sudo mksquashfs $< $@ -noappend $(MKSQUASH_OPTS)
+
 $(DIST): $(PDF) $(KERNEL_IMAGE) rootfs.sfs
 	./mk_disk.py bootloader.asm $< $(KERNEL_IMAGE) rootfs.sfs $@
 
@@ -53,8 +59,10 @@ boot_uefi_indirect: $(DIST)
 	./boot_uefi_indirect.sh "$(QEMU_CMD)" "$(OVMF)" "$(DIST)"
 
 clean:
-	-rm -f $(ESP)
 	-rm -f $(DIST)
+
+	-rm -f rootfs.sfs
+	-rm -f rootfs/
 
 	-rm -rf $(LINUX_DIR)
 
