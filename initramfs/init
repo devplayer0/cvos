@@ -1,0 +1,68 @@
+#!/bin/sh
+
+SIG_OFFSET=440
+MAGIC="cafebabe"
+BOOTFILE=/efi/boot/bootx64.efi
+check_magic() {
+	read="$(dd if=$1 bs=1 skip=$SIG_OFFSET count=4 2>/dev/null | hexdump -e '1/4 "%x\n"')"
+	[ ! -z "$read" ] && [ $read == $MAGIC ]
+}
+check_fat() {
+	mount "$1" /mnt
+	bf="/mnt$BOOTFILE"
+	[ -f $bf ] && check_magic $bf
+}
+no_root() {
+	echo "Error: Couldn't find root filesystem" >&2
+	echo "Dropping to a shell." >&2
+
+	echo " ------------------------------------------------------- " >&2
+	echo "| If you know where the rootfs is, mount it to /base -  |" >&2
+	echo "| you can then run /setup_root, passing a device / file |" >&2
+	echo "| pointing to the original PDF you obtained, (e.g. the  |" >&2
+	echo "| disk you burned, or the complete file booted as an    |" >&2
+	echo "| EFI binary)                                           |" >&2
+	echo " ------------------------------------------------------- " >&2
+
+	exec sh
+}
+setup() {
+	mount -t proc proc /proc
+	mount -t sysfs sysfs /sys
+
+	mount -t devtmpfs devtmpfs /dev
+	exec 0</dev/console
+	exec 1>/dev/console
+	exec 2>/dev/console
+
+	busybox --install -s
+}
+
+setup
+for disk in /sys/block/*; do
+	disk="/dev/${disk:11}"
+	if check_magic $disk; then
+		DISK="${disk}"
+		ROOT="${disk}2"
+		break
+	fi
+done
+if [ -z "$ROOT" ] && [ -d /sys/firmware/efi ]; then
+	fats=$(blkid | grep vfat | cut -d ':' -f 1)
+	for part in $fats; do
+		if check_fat $part; then
+			echo "Found our binary on $part"
+			DISK="/mnt$BOOTFILE"
+			offset=$(fdisk -l $DISK | grep Linux | awk -e '{ print $4*512 }')
+			losetup -o $offset /dev/loop0 $DISK
+			ROOT=/dev/loop0
+			break
+		fi
+		umount /mnt
+	done
+fi
+[ -z "$ROOT" ] && no_root
+
+echo "Found rootfs on $ROOT"
+mount "$ROOT" /base
+exec /setup_root "$DISK"

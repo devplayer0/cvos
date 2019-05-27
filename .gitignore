@@ -1,0 +1,6 @@
+bootable.pdf
+sample.pdf
+rootfs.sfs
+linux-*
+busybox-*
+initramfs/bin/busybox
