@@ -23,6 +23,7 @@
 #   <script-opts>                         Arguments to pass to the script.
 #
 # Options and Environment Variables:
+#      --no-install (NO_INSTALL)          Don't install anything (only run script)
 #   -b --branch ALPINE_BRANCH             Alpine branch to install; used only when
 #                                         --repositories-file is not specified. Default is v3.9.
 #
@@ -245,13 +246,14 @@ write_script() {
 #=============================  M a i n  ==============================#
 
 opts=$(getopt -n $PROGNAME -o b:m:Cp:r:cd:t:hV \
-	-l branch:,keys-dir:,mirror-uri:,no-cleanup,packages:,repositories-file:,script-chroot,temp-dir:,timezone:,help,version \
+	-l no-install,branch:,keys-dir:,mirror-uri:,no-cleanup,packages:,repositories-file:,script-chroot,temp-dir:,timezone:,help,version \
 	-- "$@") || help 1 >&2
 
 eval set -- "$opts"
 while [ $# -gt 0 ]; do
 	n=2
 	case "$1" in
+		     --no-install) NO_INSTALL='yes'; n=1;;
 		-b | --branch) ALPINE_BRANCH="$2";;
 		     --keys-dir) KEYS_DIR="$2";;
 		-m | --mirror-uri) ALPINE_MIRROR="$2";;
@@ -271,11 +273,12 @@ done
 [ $# -ne 0 ] || help 1 >&2
 
 ROOTFS_DEST="$1"; shift
-SCRIPT=${1:-}; shift || true
+SCRIPT=${1:-}; shift 2>/dev/null || true
 
 [ "$(id -u)" -eq 0 ] || die 'This script must be run as root!'
 [ ! -e "${TEMP_DIR:-}" ] || die "Temp path $TEMP_DIR must not exist!"
 
+: ${NO_INSTALL:="no"}
 : ${ALPINE_BRANCH:="v3.9"}
 : ${ALPINE_MIRROR:="https://nl.alpinelinux.org/alpine"}
 : ${CLEANUP:="yes"}
@@ -335,45 +338,49 @@ if ! command -v "$APK" >/dev/null; then
 fi
 
 #-----------------------------------------------------------------------
-einfo 'Installing base system'
-
-mkdir -p "$rootfs"/etc/apk/keys
-
-if [ -f "$REPOS_FILE" ]; then
-	install -m 644 "$REPOS_FILE" "$rootfs"/etc/apk/repositories
+if [ "$NO_INSTALL" != "no" ]; then
+	einfo 'Skipping installation'
 else
-	cat > "$rootfs"/etc/apk/repositories <<-EOF
-		$ALPINE_MIRROR/$ALPINE_BRANCH/main
-		$ALPINE_MIRROR/$ALPINE_BRANCH/community
-	EOF
-fi
+	einfo 'Installing base system'
 
-if [ -d "$KEYS_DIR" ]; then
-	cp "$KEYS_DIR"/* "$rootfs"/etc/apk/keys/
-else
-	dump_alpine_keys "$rootfs"/etc/apk/keys/
-fi
+	mkdir -p "$rootfs"/etc/apk/keys
 
-_apk add --root "$rootfs" --update-cache --initdb $ALPINE_BASE_PKGS >&2
+	if [ -f "$REPOS_FILE" ]; then
+		install -m 644 "$REPOS_FILE" "$rootfs"/etc/apk/repositories
+	else
+		cat > "$rootfs"/etc/apk/repositories <<-EOF
+			$ALPINE_MIRROR/$ALPINE_BRANCH/main
+			$ALPINE_MIRROR/$ALPINE_BRANCH/community
+		EOF
+	fi
 
-# This package contains /etc/os-release, /etc/alpine-release and /etc/issue,
-# but we don't wanna install all its dependencies (e.g. openrc).
-_apk fetch --root "$rootfs" --stdout alpine-base \
-	| tar -xz -C "$rootfs" etc >&2
-ln -sf /run "$rootfs"/var/run
+	if [ -d "$KEYS_DIR" ]; then
+		cp "$KEYS_DIR"/* "$rootfs"/etc/apk/keys/
+	else
+		dump_alpine_keys "$rootfs"/etc/apk/keys/
+	fi
 
-_apk add --root "$rootfs" -t "$VIRTUAL_PKG" apk-tools >&2
+	_apk add --root "$rootfs" --update-cache --initdb $ALPINE_BASE_PKGS >&2
 
-#-----------------------------------------------------------------------
-if [ "$TIMEZONE" ]; then
-	einfo "Setting timezone $TIMEZONE"
-	setup_timezone "$TIMEZONE" "$rootfs" >&2
-fi
+	# This package contains /etc/os-release, /etc/alpine-release and /etc/issue,
+	# but we don't wanna install all its dependencies (e.g. openrc).
+	_apk fetch --root "$rootfs" --stdout alpine-base \
+		| tar -xz -C "$rootfs" etc >&2
+	ln -sf /run "$rootfs"/var/run
 
-#-----------------------------------------------------------------------
-if [ "$PACKAGES" ]; then
-	einfo 'Installing additional packages'
-	_apk add --root "$rootfs" $PACKAGES >&2
+	_apk add --root "$rootfs" -t "$VIRTUAL_PKG" apk-tools >&2
+
+	#-----------------------------------------------------------------------
+	if [ "$TIMEZONE" ]; then
+		einfo "Setting timezone $TIMEZONE"
+		setup_timezone "$TIMEZONE" "$rootfs" >&2
+	fi
+
+	#-----------------------------------------------------------------------
+	if [ "$PACKAGES" ]; then
+		einfo 'Installing additional packages'
+		_apk add --root "$rootfs" $PACKAGES >&2
+	fi
 fi
 
 #-----------------------------------------------------------------------
@@ -399,7 +406,7 @@ fi
 #-----------------------------------------------------------------------
 einfo 'Cleaning-up rootfs'
 
-_apk del --root "$rootfs" --purge "$VIRTUAL_PKG" >&2
+[ "$NO_INSTALL" != "no" ] || _apk del --root "$rootfs" --purge "$VIRTUAL_PKG" >&2
 
 if grep -qw "$RESOLVCONF_MARK" "$rootfs"/etc/resolv.conf 2>/dev/null; then
 	rm "$rootfs"/etc/resolv.conf

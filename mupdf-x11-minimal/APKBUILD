@@ -1,4 +1,4 @@
-# Maintainer: Jack O'Sullivan <jackos1998@gmail.com>
+# Maintainer: Jack O\'Sullivan <jackos1998@gmail.com>
 _pkgname=mupdf
 pkgname=mupdf-x11-minimal
 pkgver=1.15.0
