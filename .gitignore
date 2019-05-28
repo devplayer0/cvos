@@ -4,5 +4,5 @@ alpine_buildroot/
 rootfs.sfs
 rootfs/
 linux-*
-busybox-*
+busybox/
 initramfs/bin/busybox

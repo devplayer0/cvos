@@ -52,10 +52,9 @@ if [ -z "$ROOT" ] && [ -d /sys/firmware/efi ]; then
 	for part in $fats; do
 		if check_fat $part; then
 			echo "Found our binary on $part"
-			DISK="/mnt$BOOTFILE"
-			offset=$(fdisk -l $DISK | grep Linux | awk -e '{ print $4*512 }')
-			losetup -o $offset /dev/loop0 $DISK
-			ROOT=/dev/loop0
+			losetup -P /dev/loop0 "/mnt$BOOTFILE"
+			DISK="/dev/loop0"
+			ROOT="${DISK}p2"
 			break
 		fi
 		umount /mnt

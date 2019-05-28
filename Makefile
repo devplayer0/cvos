@@ -1,7 +1,8 @@
-BUSYBOX_VERSION=1.30.1
+BUSYBOX_REPO=git://git.busybox.net/busybox
+BUSYBOX_REV=bcb1fc3e6ca6fe902610f507eaf9b0b58a5c583a
 LINUX_VERSION=5.1.4
 
-BUSYBOX_DIR=busybox-$(BUSYBOX_VERSION)
+BUSYBOX_DIR=busybox
 LINUX_DIR=linux-$(LINUX_VERSION)
 
 BUSYBOX_BIN=$(BUSYBOX_DIR)/busybox
@@ -21,10 +22,10 @@ OVMF := /usr/share/ovmf/x64/OVMF_CODE.fd
 default: $(DIST)
 all: default
 
-$(BUSYBOX_DIR).tar.bz2:
-	curl -L -o $@ https://busybox.net/downloads/$@
-$(BUSYBOX_DIR): $(BUSYBOX_DIR).tar.bz2
-	tar jxf $<
+$(BUSYBOX_DIR):
+	git clone $(BUSYBOX_REPO) $@
+	git -C $@ checkout -q -b cvos $(BUSYBOX_REV)
+	git -C $@ am ../0001-losetup-Add-partition-scanning-option.patch
 	cp busybox_config $@/.config
 
 $(LINUX_DIR).tar.xz:
@@ -75,5 +76,4 @@ clean:
 	-rm -f initramfs/bin/busybox
 	-rm -rf $(BUSYBOX_DIR)
 
-	-rm -f $(BUSYBOX_DIR).tar.bz2
 	-rm -f $(LINUX_DIR).tar.xz
