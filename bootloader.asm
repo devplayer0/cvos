@@ -1,4 +1,4 @@
-; CVOS bootloader - a modified Minimal Linux Bootloader (see below) 
+; CVos bootloader - a modified Minimal Linux Bootloader (see below)
 
 ; Minimal Linux Bootloader
 ; ========================
