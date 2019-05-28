@@ -10,7 +10,8 @@ fi
 apk add --no-progress rsync
 rsync -rlptD /mnt/$1 /
 
-sed -i '/^#ttyS0.*getty/s/^#//' /etc/inittab
+# Uncomment to enable login on the serial console at boot
+#sed -i '/^#ttyS0.*getty/s/^#//' /etc/inittab
 echo "ttyS0" >> /etc/securetty
 > /etc/fstab
 setup-udev -n
