@@ -65,7 +65,10 @@ clean:
 	-rm -f $(DIST)
 
 	-rm -f rootfs.sfs
-	-rm -f rootfs/
+	-sudo rm -rf rootfs/
+
+	-rm -f mupdf-x11-minimal.apk
+	-sudo rm -rf alpine_buildroot/
 
 	-rm -rf $(LINUX_DIR)
 
