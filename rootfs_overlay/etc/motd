@@ -4,7 +4,7 @@ Your PDF is available (in its original form) at /embedded.pdf.
 This image is based on Alpine Linux (edge branch)
 Networking is supported (apk is preinstalled).
 
-Keep in mind that the base filesystem is a read-only SquashFS 
-anything you write - goes into RAM!
+Keep in mind that the base filesystem is a read-only SquashFS -
+anything you write goes into RAM!
 
 To get back into X11, run /etc/init.d/xorg restart
