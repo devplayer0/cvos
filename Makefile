@@ -39,7 +39,7 @@ $(BUSYBOX_BIN): $(BUSYBOX_DIR) $(BUSYBOX_DIR)/.config
 initramfs/bin/busybox: $(BUSYBOX_BIN)
 	cp $< $@
 
-$(KERNEL_IMAGE): $(LINUX_DIR) $(LINUX_DIR)/.config initramfs/bin/busybox
+$(KERNEL_IMAGE): $(LINUX_DIR) $(LINUX_DIR)/.config initramfs/ initramfs/bin/busybox
 	$(MAKE) -C $< -j$(JOBS)
 
 mupdf-x11-minimal.apk:

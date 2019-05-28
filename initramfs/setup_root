@@ -14,7 +14,8 @@ echo "PDF is $PDF_SIZE bytes"
 mount -t tmpfs tmpfs /overlay
 mkdir /overlay/root /overlay/work
 mount -t overlay overlay -o lowerdir=/base,upperdir=/overlay/root,workdir=/overlay/work /newroot
-dd if=$1 bs=1 skip=$PDF_OFFSET count=$PDF_SIZE of=/newroot/embedded.pdf 2>/dev/null
+losetup -o $PDF_OFFSET /dev/loop1 $1
+dd if=/dev/loop1 bs=$PDF_SIZE count=1 of=/newroot/embedded.pdf 2>/dev/null
 
 mount -t proc -o noexec,nosuid,nodev proc /newroot/proc
 mount -t sysfs -o noexec,nosuid,nodev sysfs /newroot/sys
