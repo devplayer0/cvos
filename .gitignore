@@ -3,6 +3,7 @@ mupdf-x11-minimal.apk
 alpine_buildroot/
 rootfs.sfs
 rootfs/
+logo.ppm
 linux-*
 busybox/
 initramfs/bin/busybox

@@ -42,7 +42,10 @@ $(BUSYBOX_BIN): | $(BUSYBOX_DIR) $(BUSYBOX_DIR)/.config alpine_buildroot/
 initramfs/bin/busybox: $(BUSYBOX_BIN)
 	cp $< $@
 
-$(KERNEL_IMAGE): $(LINUX_DIR) $(LINUX_DIR)/.config initramfs/ initramfs/bin/busybox
+logo.ppm: logo.png
+	pngtopnm $< | pamscale -width 80 -height 80 | ppmquant -fs 224 | pnmtoplainpnm > $@
+$(KERNEL_IMAGE): $(LINUX_DIR) $(LINUX_DIR)/.config logo.ppm initramfs/ initramfs/bin/busybox
+	cp logo.ppm $</drivers/video/logo/logo_linux_clut224.ppm
 	$(MAKE) -C $< -j$(JOBS)
 
 mupdf-x11-minimal.apk: | alpine_buildroot/
@@ -73,6 +76,7 @@ clean:
 	-rm -f mupdf-x11-minimal.apk
 	-sudo rm -rf alpine_buildroot/
 
+	-rm -f logo.ppm
 	-rm -rf $(LINUX_DIR)
 
 	-rm -f initramfs/bin/busybox
