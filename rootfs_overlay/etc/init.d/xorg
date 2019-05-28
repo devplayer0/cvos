@@ -8,7 +8,7 @@ pidfile="/var/run/$SVCNAME"
 
 start_pre() {
 	ebegin "Generating X11 config"
-	X -configure
+	X -configure > /dev/null 2>&1
 	cp /xorg.conf.new /etc/X11/xorg.conf
 	eend $?
 }
