@@ -6,6 +6,12 @@ command_args="/etc/X11/xinit/xinitrc"
 command_background=true
 pidfile="/var/run/$SVCNAME"
 
+start_pre() {
+	ebegin "Generating X11 config"
+	X -configure
+	cp /xorg.conf.new /etc/X11/xorg.conf
+	eend $?
+}
 depend() {
 	need localmount
 }

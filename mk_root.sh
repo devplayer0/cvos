@@ -2,7 +2,8 @@
 set -e
 
 TIMEZONE="Europe/Dublin"
-PACKAGES="alpine-base eudev xf86-input-libinput xf86-video-modesetting xorg-server xrandr xdotool xmessage"
+PACKAGES="alpine-base eudev xf86-input-libinput xf86-video-modesetting xf86-video-qxl \
+	xf86-video-vesa xorg-server xwininfo xdotool xmessage"
 
 if [ "$#" != 3 ]; then
 	echo "usage: $0 <target rootfs path> <overlay dir> <mupdf-x11 .apk>" >&2

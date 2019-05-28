@@ -2,8 +2,9 @@
 
 mupdf-x11 /embedded.pdf &
 
-RES=$(xrandr -q | grep primary | awk '{ split($4, w, "+"); split(w[1], res, "x"); print res[1] " " res[2] }')
+WIDTH="$(xwininfo -root | grep Width | awk '{ print $2 }')"
+HEIGHT="$(xwininfo -root | grep Height | awk '{ print $2 }')"
 xmessage -center -buttons OK -file /etc/xwelcome
-xdotool search --sync --class "mupdf" windowsize $RES windowmove 0 0
+xdotool search --sync --class "mupdf" windowsize $WIDTH $HEIGHT windowmove 0 0
 
 wait
