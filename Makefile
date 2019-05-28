@@ -42,8 +42,11 @@ initramfs/bin/busybox: $(BUSYBOX_BIN)
 $(KERNEL_IMAGE): $(LINUX_DIR) $(LINUX_DIR)/.config initramfs/bin/busybox
 	$(MAKE) -C $< -j$(JOBS)
 
-rootfs/: rootfs_overlay/
-	./mk_root.sh $@ $<
+mupdf-x11-minimal.apk:
+	./build_mupdf.sh $@
+
+rootfs/: rootfs_overlay/ mupdf-x11-minimal.apk
+	./mk_root.sh $@ $< mupdf-x11-minimal.apk
 rootfs.sfs: rootfs/
 	sudo mksquashfs $< $@ -noappend $(MKSQUASH_OPTS)
 

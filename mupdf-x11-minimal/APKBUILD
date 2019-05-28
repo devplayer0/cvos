@@ -1,0 +1,67 @@
+# Maintainer: Jack O'Sullivan <jackos1998@gmail.com>
+_pkgname=mupdf
+pkgname=mupdf-x11-minimal
+pkgver=1.15.0
+pkgrel=0
+pkgdesc="Lightweight PDF viewer (minimal X11 version)"
+url="https://mupdf.com"
+arch="all"
+license="AGPL-3.0-or-later"
+depends=""
+makedepends="freetype-dev
+	harfbuzz-dev
+	jbig2dec-dev
+	jpeg-dev
+	openjpeg-dev
+	readline-dev
+	freeglut-dev
+	zlib-dev
+	libx11-dev
+	libxext-dev
+	libxrandr-dev
+	libxi-dev
+	mesa-dev
+	glu-dev"
+
+options="!check"
+source="https://mupdf.com/downloads/archive/$_pkgname-$pkgver-source.tar.xz
+	fix-big-endian.patch
+	minimal.patch
+	"
+
+# secfixes:
+#   1.13-r0:
+#   - CVE-2018-1000051
+#   - CVE-2018-6544
+#   - CVE-2018-6192
+#   - CVE-2018-6187
+#   - CVE-2018-5686
+#   - CVE-2017-17858
+#   1.11-r1:
+#   - CVE-2017-6060
+#   1.10a-r2:
+#   - CVE-2017-5991
+#   1.10a-r1:
+#   - CVE-2017-5896
+
+builddir="$srcdir/$_pkgname-$pkgver-source"
+prepare() {
+	default_prepare
+	rm -rf thirdparty/{curl,freeglut,freetype,harfbuzz,jbig2dec,libjpeg,openjpeg,zlib}
+}
+
+build() {
+	cd "$builddir"
+	make USE_SYSTEM_LIBS=yes prefix=/usr CURL_LIBS='-lcurl -lpthread' build=release apps
+}
+
+package() {
+	cd "$builddir"
+
+	cd build/release
+	install -Dm755 mupdf-x11 "$pkgdir"/usr/bin/mupdf-x11
+}
+
+sha512sums="ef19362e8b6c2843e214fd2fcdcc9ba91017884383f7e1cfe08ef1f528a233820475ddfdd8aef481e6e37ae69e8b64324eb4b30699baa8055e99e47c2fab31dd  mupdf-1.15.0-source.tar.xz
+486d09df319050ddb33dbd1e2e0638a7bc6a3e188032a35b81119c45b0de911629b827b21aa47cde6669b66d73fb22cff54d190a8449151fdc27eace71beefbd  fix-big-endian.patch
+78c02dbcfb4d9d59066f433080c9a8509d3a4d5e76280e7f21b2473aa10a507865fa17be7c053fd3f98afc5d2a8155cd94b00ae9a27a00fa6fb8773815ae5c2d  minimal.patch"
