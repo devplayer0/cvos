@@ -24,14 +24,14 @@ all: default
 $(BUSYBOX_DIR).tar.bz2:
 	curl -L -o $@ https://busybox.net/downloads/$@
 $(BUSYBOX_DIR): $(BUSYBOX_DIR).tar.bz2
-	cp busybox_config $@/.config
 	tar jxf $<
+	cp busybox_config $@/.config
 
 $(LINUX_DIR).tar.xz:
 	curl -L -o $@ https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/$@
 $(LINUX_DIR): $(LINUX_DIR).tar.xz
-	cp kernel_config $@/.config
 	tar Jxf $<
+	INITRAMFS_UID=$$(id -u) INITRAMFS_GID=$$(id -g) envsubst < kernel_config > $@/.config
 
 $(BUSYBOX_BIN): $(BUSYBOX_DIR) $(BUSYBOX_DIR)/.config
 	$(MAKE) -C $< -j$(JOBS)
