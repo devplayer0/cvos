@@ -1,6 +1,6 @@
 BUSYBOX_REPO=git://git.busybox.net/busybox
 BUSYBOX_REV=bcb1fc3e6ca6fe902610f507eaf9b0b58a5c583a
-LINUX_VERSION=5.1.4
+LINUX_VERSION=5.1.5
 
 BUSYBOX_DIR=busybox
 LINUX_DIR=linux-$(LINUX_VERSION)
@@ -76,6 +76,6 @@ clean:
 	-rm -rf $(LINUX_DIR)
 
 	-rm -f initramfs/bin/busybox
-	-rm -rf $(BUSYBOX_DIR)
+	-sudo rm -rf $(BUSYBOX_DIR)
 
 	-rm -f $(LINUX_DIR).tar.xz
