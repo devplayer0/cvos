@@ -2,6 +2,12 @@
 CVos "converts" a PDF into a bootable disk image (based on Linux) which can view
 itself - while still being usable as a PDF!
 
+<p align="center">
+  <img alt="Demo" src="demo.gif?raw=true">
+</p>
+
+You can grab an example bootable PDF from the [releases page](https://github.com/devplayer0/cvos/releases).
+
 Inspired by [Curriculum Bootloader](https://github.com/pjimenezmateo/curriculum-bootloader).
 
 ## How do I boot it?
