@@ -32,8 +32,8 @@ Pass `OVMF=/path/to/OVMF_CODE.fd` to `make` if your OVMF BIOS file isn't in the 
 An x86_64-based system is required.
 
 By writing the PDF directly to a disk, you can boot it on a BIOS / UEFI system:
-  1. Run `dd if=/path/to/bootable.pdf of=/dev/sda bs=1M oflag=direct`
-      - **Be sure to replace `/dev/sda` with the path to your USB drive**
+  1. Run `dd if=/path/to/bootable.pdf of=/dev/SOMETHING bs=1M oflag=direct`
+      - **Be sure to replace `/dev/SOMETHING` with the path to your USB drive**
   2. Start your machine and boot from the drive (you will probably need to spam a key to get a boot menu)
 
 If you're on Windows, something like [Rufus](https://rufus.ie) in DD mode should work.
