@@ -1,5 +1,5 @@
 BUSYBOX_REPO=git://git.busybox.net/busybox
-BUSYBOX_REV=bcb1fc3e6ca6fe902610f507eaf9b0b58a5c583a
+BUSYBOX_REV=91755cb16d496d1094f5d81051a1e1e6f27a21c1
 LINUX_VERSION=5.1.5
 
 BUSYBOX_DIR=busybox
@@ -24,8 +24,6 @@ all: default
 
 $(BUSYBOX_DIR):
 	git clone $(BUSYBOX_REPO) $@
-	git -C $@ checkout -q -b cvos $(BUSYBOX_REV)
-	git -C $@ am ../0001-losetup-Add-partition-scanning-option.patch
 	cp busybox_config $@/.config
 
 $(LINUX_DIR).tar.xz:
