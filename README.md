@@ -57,6 +57,7 @@ You'll need:
   - Python 3
   - [Python `pefile`](https://pypi.org/project/pefile/)
   - [fatcat](https://github.com/Gregwar/fatcat)
+  - [QPDF](http://qpdf.sourceforge.net)
   - [QEMU][qemu] and [OVMF][ovmf] (for testing)
 
 Clone this repo, run `make PDF=/path/to/your.pdf` and wait - a `bootable.pdf` will be produced.

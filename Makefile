@@ -54,7 +54,9 @@ rootfs/: rootfs_overlay/ mupdf-x11-minimal.apk
 rootfs.sfs: rootfs/
 	sudo mksquashfs $< $@ -noappend $(MKSQUASH_OPTS)
 
-$(DIST): $(PDF) $(KERNEL_IMAGE) rootfs.sfs
+unstreamed.pdf: $(PDF)
+	qpdf --object-streams=disable $< $@
+$(DIST): unstreamed.pdf $(KERNEL_IMAGE) rootfs.sfs
 	./mk_disk.py bootloader.asm $< $(KERNEL_IMAGE) rootfs.sfs $@
 
 boot_bios: $(DIST)
@@ -67,6 +69,7 @@ boot_uefi_indirect: $(DIST)
 
 clean:
 	-rm -f $(DIST)
+	-rm -f unstreamed.pdf
 
 	-rm -f rootfs.sfs
 	-sudo rm -rf rootfs/
