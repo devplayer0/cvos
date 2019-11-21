@@ -1,8 +1,7 @@
-BUSYBOX_REPO=git://git.busybox.net/busybox
-BUSYBOX_REV=91755cb16d496d1094f5d81051a1e1e6f27a21c1
-LINUX_VERSION=5.1.5
+BUSYBOX_VERSION=1.31.1
+LINUX_VERSION=5.3.11
 
-BUSYBOX_DIR=busybox
+BUSYBOX_DIR=busybox-$(BUSYBOX_VERSION)
 LINUX_DIR=linux-$(LINUX_VERSION)
 
 BUSYBOX_BIN=$(BUSYBOX_DIR)/busybox
@@ -22,8 +21,10 @@ OVMF := /usr/share/ovmf/x64/OVMF_CODE.fd
 default: $(DIST)
 all: default
 
-$(BUSYBOX_DIR):
-	git clone $(BUSYBOX_REPO) $@
+$(BUSYBOX_DIR).tar.bz2:
+	curl -L -o $@ https://busybox.net/downloads/$@
+$(BUSYBOX_DIR): $(BUSYBOX_DIR).tar.bz2
+	tar jxf $<
 	cp busybox_config $@/.config
 
 $(LINUX_DIR).tar.xz:
@@ -84,3 +85,4 @@ clean:
 	-sudo rm -rf $(BUSYBOX_DIR)
 
 	-rm -f $(LINUX_DIR).tar.xz
+	-rm -f $(BUSYBOX_DIR).tar.bz2

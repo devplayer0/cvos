@@ -6,5 +6,5 @@ rootfs.sfs
 rootfs/
 logo.ppm
 linux-*
-busybox/
+busybox-*
 initramfs/bin/busybox
