@@ -64,7 +64,7 @@ You'll need:
 Clone this repo, run `make PDF=/path/to/your.pdf` and wait - a `bootable.pdf` will be produced.
 See above for boot instructions.
 
-Not passing `PDF=` to `make` will use the provided sample PDF from [CUPS](https://www.cups.org).
+Not passing `PDF=` to `make` will use the included sample PDF ([my CV](sample.pdf)).
 
 **Be sure check if it still works as a PDF on its own - unfortunately not all seem to be compatible.**
 
