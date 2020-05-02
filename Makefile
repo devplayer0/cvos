@@ -14,7 +14,7 @@ DIST := bootable.pdf
 
 MKSQUASH_OPTS := -b 1M -comp xz -Xdict-size 100%
 QEMU_CMD := qemu-system-x86_64 -machine q35 -m 2G -cpu host -smp 2 -enable-kvm -vga qxl -usb -device usb-tablet -net nic -net user
-OVMF := /usr/share/ovmf/x64/OVMF_CODE.fd
+OVMF := /usr/share/edk2-ovmf/x64/OVMF_CODE.fd
 
 .PHONY: default all clean app boot_bios boot_uefi boot_uefi_indirect
 

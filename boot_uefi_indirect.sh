@@ -16,6 +16,7 @@ ESP="$(mktemp /tmp/esp-XXXXXX.img)"
 truncate -s $ESP_SIZE $ESP
 sgdisk --new=1 --typecode=1:EF00 $ESP
 LOOP="$(sudo losetup --find --show --partscan $ESP)"
+sudo partprobe ${LOOP}
 sudo mkfs.fat -F32 -n ESP ${LOOP}p1
 
 MOUNT=$(mktemp -d /tmp/esp-XXXXXX)
