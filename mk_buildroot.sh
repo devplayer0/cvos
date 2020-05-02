@@ -8,6 +8,6 @@ fi
 
 sudo rm -rf "$1"
 PATH=$PATH:/bin sudo ./alpine-make-rootfs \
-	--branch edge \
+	--branch v3.11 \
 	--packages "alpine-sdk linux-headers" \
 	"$1"
